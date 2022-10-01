@@ -1,6 +1,4 @@
 #include "Arduino.h"
-#include "OneButton.h"
-#include "WiFi.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_vendor.h"
@@ -13,8 +11,6 @@ static lv_disp_draw_buf_t disp_buf;  // contains internal graphic buffer(s) call
 static lv_disp_drv_t disp_drv;       // contains callback functions
 static lv_color_t *lv_disp_buf;
 static bool is_initialized_lvgl = false;
-OneButton button1(PIN_BUTTON_1, true);
-OneButton button2(PIN_BUTTON_2, true);
 extern const unsigned char img_logo[20000];
 void wifi_test(void);
 void timeavailable(struct timeval *t);
@@ -125,13 +121,8 @@ void setup() {
 
     is_initialized_lvgl = true;
 
-    button1.attachClick([]() {
-
-    });
-    button2.attachClick([]() {});
-
     ui_init();
-    //Serial.write('#');
+
     USBSerial.begin(115200);
 }
 static int ticker = 0;
@@ -188,8 +179,6 @@ void loop() {
       }
     }
     lv_timer_handler();
-    button1.tick();
-    button2.tick();
     delay(3);
     
 }
