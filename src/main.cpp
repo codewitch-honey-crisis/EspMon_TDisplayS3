@@ -1,3 +1,5 @@
+#include "circular_buffer.hpp"
+
 #include "Arduino.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
@@ -11,7 +13,10 @@ static lv_disp_draw_buf_t disp_buf;  // contains internal graphic buffer(s) call
 static lv_disp_drv_t disp_drv;       // contains callback functions
 static lv_color_t *lv_disp_buf;
 static bool is_initialized_lvgl = false;
-
+circular_buffer<uint8_t, 135> cpu_graph;
+circular_buffer<uint8_t, 135> gpu_graph;
+static lv_color_t cpu_graph_buf[LV_IMG_BUF_SIZE_TRUE_COLOR(135,37)];
+static lv_color_t gpu_graph_buf[LV_IMG_BUF_SIZE_TRUE_COLOR(135,37)];
 static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
     if (is_initialized_lvgl) {
         lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
@@ -117,61 +122,117 @@ void setup() {
     is_initialized_lvgl = true;
 
     ui_init();
-
+    lv_canvas_set_buffer(ui_CpuGraph,cpu_graph_buf,135,37,LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_set_buffer(ui_GpuGraph,gpu_graph_buf,135,37,LV_IMG_CF_TRUE_COLOR);
     USBSerial.begin(115200);
 }
 static int ticker = 0;
 void loop() {
+    uint8_t tmp;
+    uint8_t v;
+    bool redraw_cpu, redraw_gpu;
     char sz[64];
     union {
         float f;
         uint8_t b[4];
     } fbu;
-    if(ticker++>=33) {
-      ticker = 0;
-      
-      if (USBSerial.available()) {
-          int i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
-          if (i == 0) {
-              USBSerial.write('#');
-          } else {
-              lv_bar_set_value(ui_CpuBar, (int)(fbu.f + .5), LV_ANIM_ON);
-              if (USBSerial.available()) {
-                  i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
-                  if (i != 0) {
-                      snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
-                      lv_label_set_text(ui_CpuTempLabel, sz);
-                      if (USBSerial.available()) {
-                          i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
-                          if (i != 0) {
-                              lv_bar_set_value(ui_GpuBar, (int)(fbu.f + .5), LV_ANIM_ON);
-                              if (USBSerial.available()) {
-                                  i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
-                                  if (i != 0) {
-                                      snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
-                                      lv_label_set_text(ui_GpuTempLabel, sz);
-                                  } else {
-                                      USBSerial.write('#');
-                                  }
-                              } else {
-                                  USBSerial.write('#');
-                              }
-                          } else {
-                              USBSerial.write('#');
-                          }
-                      } else {
-                          USBSerial.write('#');
-                      }
-                  } else {
-                      USBSerial.write('#');
-                  }
-              } else {
-                  USBSerial.write('#');
-              }
-          }
-      } else {
-        USBSerial.write('#');
-      }
+    if (ticker++ >= 33) {
+        ticker = 0;
+        redraw_cpu = false;
+        redraw_gpu = false;
+        if (USBSerial.available()) {
+            int i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+            if (i == 0) {
+                USBSerial.write('#');
+            } else {
+                if(cpu_graph.full()) {
+                    cpu_graph.get(&tmp);
+                }
+                v = (fbu.f + .5);
+                cpu_graph.put(v);
+                redraw_cpu=true;
+                lv_bar_set_value(ui_CpuBar, v, LV_ANIM_ON);
+                if (USBSerial.available()) {
+                    i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+
+                    if (i != 0) {
+                        snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
+                        lv_label_set_text(ui_CpuTempLabel, sz);
+                        if (USBSerial.available()) {
+                            i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+                            if (i != 0) {
+                                if(gpu_graph.full()) {
+                                    gpu_graph.get(&tmp);
+                                }               
+                                v=(fbu.f + .5);
+                                gpu_graph.put(v);
+                                redraw_gpu=true;
+                                lv_bar_set_value(ui_GpuBar, v, LV_ANIM_ON);
+                                if (USBSerial.available()) {
+                                    i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+                                    if (i != 0) {
+                                        snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
+                                        lv_label_set_text(ui_GpuTempLabel, sz);
+                                    } else {
+                                        USBSerial.write('#');
+                                    }
+                                } else {
+                                    USBSerial.write('#');
+                                }
+                            } else {
+                                USBSerial.write('#');
+                            }
+                        } else {
+                            USBSerial.write('#');
+                        }
+                    } else {
+                        USBSerial.write('#');
+                    }
+                } else {
+                    USBSerial.write('#');
+                }
+            }
+        } else {
+            USBSerial.write('#');
+        }
+    }
+    if(redraw_cpu) {
+        lv_point_t pts[sizeof(cpu_graph)];
+        lv_draw_line_dsc_t dsc;
+        lv_draw_line_dsc_init(&dsc);
+        dsc.width = 1;
+        dsc.color = lv_color_hex(0x0000FF);
+        dsc.opa = LV_OPA_100;
+        lv_canvas_fill_bg(ui_CpuGraph,lv_color_white(),LV_OPA_100);
+        v = *cpu_graph.peek(0);
+        pts[0].x = 0;
+        pts[0].y = 37-(v/100.0f)*37;
+        for(size_t i = 1;i<cpu_graph.size();++i) {
+            v = *cpu_graph.peek(i);
+            pts[i].x = i;
+            pts[i].y = 37-(v/100.0f)*37;
+        }
+        lv_canvas_draw_line(ui_CpuGraph,pts,cpu_graph.size(),&dsc);
+        //lv_obj_invalidate(ui_CpuGraph);
+    }
+    if(redraw_gpu) {
+        lv_point_t pts[sizeof(gpu_graph)];
+        lv_draw_line_dsc_t dsc;
+        lv_draw_line_dsc_init(&dsc);
+        dsc.width = 1;
+        dsc.color = lv_color_hex(0xFF0000);
+        dsc.opa = LV_OPA_100;
+        lv_canvas_fill_bg(ui_GpuGraph,lv_color_white(),LV_OPA_100);
+        v = *gpu_graph.peek(0);
+        pts[0].x = 0;
+        pts[0].y = 37-(v/100.0f)*37;
+        for(size_t i = 1;i<gpu_graph.size();++i) {
+            v = *gpu_graph.peek(i);
+            pts[i].x = i;
+            pts[i].y = 37-(v/100.0f)*37;
+        }
+        lv_canvas_draw_line(ui_GpuGraph,pts,gpu_graph.size(),&dsc);
+        //lv_obj_invalidate(ui_GpuGraph);
     }
     lv_timer_handler();
     delay(3);

@@ -29,6 +29,8 @@ extern lv_obj_t * ui_CpuBar;
 extern lv_obj_t * ui_GpuBar;
 extern lv_obj_t * ui_CpuTempLabel;
 extern lv_obj_t * ui_GpuTempLabel;
+extern lv_obj_t * ui_CpuGraph;
+extern lv_obj_t * ui_GpuGraph;
 
 
 

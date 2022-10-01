@@ -14,8 +14,8 @@ lv_obj_t * ui_CpuBar;
 lv_obj_t * ui_GpuBar;
 lv_obj_t * ui_CpuTempLabel;
 lv_obj_t * ui_GpuTempLabel;
-
-///////////////////// TEST LVGL SETTINGS ////////////////////
+lv_obj_t * ui_CpuGraph;
+lv_obj_t * ui_GpuGraph;
 
 ///////////////////// ANIMATIONS ////////////////////
 
@@ -81,6 +81,22 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_align(ui_GpuTempLabel, LV_ALIGN_LEFT_MID);
     lv_label_set_text(ui_GpuTempLabel, "100C/100F");
     lv_obj_set_style_text_font(ui_GpuTempLabel, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_CpuGraph = lv_canvas_create(ui_Screen1);
+    lv_obj_set_width(ui_CpuGraph, 135);
+    lv_obj_set_height(ui_CpuGraph, 37);
+    lv_obj_set_x(ui_CpuGraph, -18);
+    lv_obj_set_y(ui_CpuGraph, -31);
+    lv_obj_set_align(ui_CpuGraph, LV_ALIGN_RIGHT_MID);
+    lv_obj_clear_flag(ui_CpuGraph, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_GpuGraph = lv_canvas_create(ui_Screen1);
+    lv_obj_set_width(ui_GpuGraph, 135);
+    lv_obj_set_height(ui_GpuGraph, 37);
+    lv_obj_set_x(ui_GpuGraph, -18);
+    lv_obj_set_y(ui_GpuGraph, 45);
+    lv_obj_set_align(ui_GpuGraph, LV_ALIGN_RIGHT_MID);
+    lv_obj_clear_flag(ui_GpuGraph, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
 }
 
