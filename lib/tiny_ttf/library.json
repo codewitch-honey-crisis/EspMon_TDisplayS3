@@ -1,0 +1,18 @@
+{
+    "name": "tiny_ttf",
+    "version": "0.1.0",
+    "description": "Provides relatively lightweight TrueType support for LVGL",
+    "keywords": ["font","LVGL"],
+    "authors": {
+        "name":"honey the codewitch",
+        "homepage": "https://www.codeproject.com/Members/code-witch"
+    },
+    "license": "MIT",
+    "frameworks": "*",
+    "platforms": "*",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/codewitch-honey-crisis/tiny_ttf.git"
+    }
+}
