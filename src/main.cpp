@@ -11,13 +11,8 @@ static lv_disp_draw_buf_t disp_buf;  // contains internal graphic buffer(s) call
 static lv_disp_drv_t disp_drv;       // contains callback functions
 static lv_color_t *lv_disp_buf;
 static bool is_initialized_lvgl = false;
-extern const unsigned char img_logo[20000];
-void wifi_test(void);
-void timeavailable(struct timeval *t);
-void printLocalTime();
-void SmartConfig();
 
-static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
+static bool notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
     if (is_initialized_lvgl) {
         lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
         lv_disp_flush_ready(disp_driver);
@@ -25,7 +20,7 @@ static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, 
     return false;
 }
 
-static void example_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map) {
+static void lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map) {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)drv->user_data;
     int offsetx1 = area->x1;
     int offsetx2 = area->x2;
@@ -67,7 +62,7 @@ void setup() {
         .cs_gpio_num = PIN_LCD_CS,
         .pclk_hz = EXAMPLE_LCD_PIXEL_CLOCK_HZ,
         .trans_queue_depth = 20,
-        .on_color_trans_done = example_notify_lvgl_flush_ready,
+        .on_color_trans_done = notify_lvgl_flush_ready,
         .user_ctx = &disp_drv,
         .lcd_cmd_bits = 8,
         .lcd_param_bits = 8,
@@ -114,7 +109,7 @@ void setup() {
     /*Change the following line to your display resolution*/
     disp_drv.hor_res = EXAMPLE_LCD_H_RES;
     disp_drv.ver_res = EXAMPLE_LCD_V_RES;
-    disp_drv.flush_cb = example_lvgl_flush_cb;
+    disp_drv.flush_cb = lvgl_flush_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
     lv_disp_drv_register(&disp_drv);
@@ -180,5 +175,4 @@ void loop() {
     }
     lv_timer_handler();
     delay(3);
-    
 }
