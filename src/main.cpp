@@ -7,6 +7,7 @@
 #include "lvgl.h"
 #include "pin_config.h"
 #include "ui.h"
+#include "ui_patch.h"
 
 esp_lcd_panel_io_handle_t io_handle = NULL;
 static lv_disp_draw_buf_t disp_buf;  // contains internal graphic buffer(s) called draw buffer(s)
@@ -122,6 +123,7 @@ void setup() {
     is_initialized_lvgl = true;
 
     ui_init();
+    ui_patch();
     lv_canvas_set_buffer(ui_CpuGraph,cpu_graph_buf,135,37,LV_IMG_CF_TRUE_COLOR);
     lv_canvas_set_buffer(ui_GpuGraph,gpu_graph_buf,135,37,LV_IMG_CF_TRUE_COLOR);
     USBSerial.begin(115200);
