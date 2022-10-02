@@ -112,8 +112,8 @@ void setup() {
     /*Initialize the display*/
     lv_disp_drv_init(&disp_drv);
     /*Change the following line to your display resolution*/
-    disp_drv.hor_res = EXAMPLE_LCD_H_RES;
-    disp_drv.ver_res = EXAMPLE_LCD_V_RES;
+    disp_drv.hor_res = LCD_H_RES;
+    disp_drv.ver_res = LCD_V_RES;
     disp_drv.flush_cb = lvgl_flush_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
@@ -154,7 +154,6 @@ void loop() {
                 lv_bar_set_value(ui_CpuBar, v, LV_ANIM_ON);
                 if (USBSerial.available()) {
                     i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
-
                     if (i != 0) {
                         snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
                         lv_label_set_text(ui_CpuTempLabel, sz);
@@ -213,7 +212,6 @@ void loop() {
             pts[i].y = 37-(v/100.0f)*37;
         }
         lv_canvas_draw_line(ui_CpuGraph,pts,cpu_graph.size(),&dsc);
-        //lv_obj_invalidate(ui_CpuGraph);
     }
     if(redraw_gpu) {
         lv_point_t pts[sizeof(gpu_graph)];
@@ -232,7 +230,6 @@ void loop() {
             pts[i].y = 37-(v/100.0f)*37;
         }
         lv_canvas_draw_line(ui_GpuGraph,pts,gpu_graph.size(),&dsc);
-        //lv_obj_invalidate(ui_GpuGraph);
     }
     lv_timer_handler();
     delay(3);

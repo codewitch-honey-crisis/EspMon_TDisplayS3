@@ -1,24 +1,11 @@
 #pragma once
 
-#define WIFI_SSID                    "Communism_Will_Win"
-#define WIFI_PASSWORLD               "mypalkarl"
-
-// #define WIFI_SSID                    "ChinaNet-A179"
-// #define WIFI_PASSWORLD               "88888888"
-
-#define WIFI_CONNECT_WAIT_MAX        (30 * 1000)
-
-#define NTP_SERVER1                  "pool.ntp.org"
-#define NTP_SERVER2                  "time.nist.gov"
-#define GMT_OFFSET_SEC               (3600 * 8)
-#define DAY_LIGHT_OFFSET_SEC         0
-
 /* LCD CONFIG */
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ   (6528000) //(10 * 1000 * 1000)
 // The pixel number in horizontal and vertical
-#define EXAMPLE_LCD_H_RES            320
-#define EXAMPLE_LCD_V_RES            170
-#define LVGL_LCD_BUF_SIZE            (EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES)
+#define LCD_H_RES            320
+#define LCD_V_RES            170
+#define LVGL_LCD_BUF_SIZE            (LCD_H_RES * LCD_V_RES)
 #define EXAMPLE_PSRAM_DATA_ALIGNMENT 64
 
 /*ESP32S3*/
