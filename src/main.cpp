@@ -382,7 +382,7 @@ static void update_screen_1() {
         for (size_t i = 1; i < gpu_graph.size(); ++i) {
             v = *gpu_graph.peek(i);
             pts[i].x = i;
-            pts[i].y = 36 - ((v/cpu_scale)+offs) * 36;
+            pts[i].y = 36 - ((v/gpu_scale)+offs) * 36;
         }
         lv_canvas_draw_line(ui_GpuGhzGraph, pts, gpu_graph.size(), &dsc);
     }
