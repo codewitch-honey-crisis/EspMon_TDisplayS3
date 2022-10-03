@@ -19,6 +19,7 @@ esp_lcd_panel_io_handle_t io_handle = NULL;
 static lv_disp_draw_buf_t disp_buf;  // contains internal graphic buffer(s) called draw buffer(s)
 static lv_disp_drv_t disp_drv;       // contains callback functions
 static lv_color_t *lv_disp_buf;
+static lv_color_t *lv_disp_buf2;
 static bool is_initialized_lvgl = false;
 circular_buffer<uint8_t, 135> cpu_graph;
 circular_buffer<uint8_t, 135> gpu_graph;
@@ -155,8 +156,8 @@ void setup() {
 
     lv_init();
     lv_disp_buf = (lv_color_t *)heap_caps_malloc(LVGL_LCD_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
-
-    lv_disp_draw_buf_init(&disp_buf, lv_disp_buf, NULL, LVGL_LCD_BUF_SIZE);
+    lv_disp_buf2 = (lv_color_t *)heap_caps_malloc(LVGL_LCD_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+    lv_disp_draw_buf_init(&disp_buf, lv_disp_buf, lv_disp_buf2, LVGL_LCD_BUF_SIZE);
     /*Initialize the display*/
     lv_disp_drv_init(&disp_drv);
     /*Change the following line to your display resolution*/
@@ -305,16 +306,16 @@ static void update_screen_1() {
             }
             v = (fbu.f + .5);
             cpu_graph.put(v);
-            if(screen_1_cpu_min!=screen_1_cpu_min||screen_1_cpu_min>v) {
+            if(screen_1_cpu_min!=screen_1_cpu_min||v<screen_1_cpu_min) {
                 screen_1_cpu_min = v;
             }
-            if(screen_1_cpu_max!=screen_1_cpu_max||screen_1_cpu_max<v) {
+            if(screen_1_cpu_max!=screen_1_cpu_max||v>screen_1_cpu_max) {
                 screen_1_cpu_max = v;
             }
             cpu_scale = screen_1_cpu_max-screen_1_cpu_min+1;
-            float offs = - (screen_1_cpu_min*cpu_scale);
+            float offs = - (screen_1_cpu_min/cpu_scale);
             redraw_cpu = true;
-            lv_bar_set_value(ui_CpuBar, ((v/cpu_scale)+offs)*100, LV_ANIM_ON);
+            lv_bar_set_value(ui_CpuGhzBar, ((v/cpu_scale)+offs)*100, LV_ANIM_ON);
             snprintf(sz, sizeof(sz), "%0.1fGHz", fbu.f/1000.0);
             lv_label_set_text(ui_CpuGhzLabel, sz);
             if (USBSerial.available()) {
@@ -325,16 +326,16 @@ static void update_screen_1() {
                     }
                     v = (fbu.f + .5);
                     gpu_graph.put(v);
-                    if(screen_1_gpu_min!=screen_1_gpu_min||screen_1_gpu_min>v) {
+                    if(screen_1_gpu_min!=screen_1_gpu_min||v<screen_1_gpu_min) {
                         screen_1_gpu_min = v;
                     }
-                    if(screen_1_gpu_max!=screen_1_gpu_max||screen_1_gpu_max<v) {
+                    if(screen_1_gpu_max!=screen_1_gpu_max||v>screen_1_gpu_max) {
                         screen_1_gpu_max = v;
                     }
                     gpu_scale = screen_1_gpu_max-screen_1_gpu_min+1;
-                    offs = - (screen_1_gpu_min*gpu_scale);
+                    offs = - (screen_1_gpu_min/gpu_scale);
                     redraw_gpu = true;
-                    lv_bar_set_value(ui_CpuBar, ((v/gpu_scale)+offs)*100, LV_ANIM_ON);
+                    lv_bar_set_value(ui_GpuGhzBar, ((v/gpu_scale)+offs)*100, LV_ANIM_ON);
                     snprintf(sz, sizeof(sz), "%0.1fGHz", fbu.f/1000.0);
                     lv_label_set_text(ui_GpuGhzLabel, sz);
                 } else {
@@ -348,14 +349,14 @@ static void update_screen_1() {
         USBSerial.write('@');
     }
     if (redraw_cpu) {
-        float offs = - (screen_1_cpu_min*cpu_scale);
+        float offs = - (screen_1_cpu_min/cpu_scale);
         lv_point_t pts[sizeof(cpu_graph)];
         lv_draw_line_dsc_t dsc;
         lv_draw_line_dsc_init(&dsc);
         dsc.width = 1;
         dsc.color = lv_color_hex(0x0000FF);
         dsc.opa = LV_OPA_100;
-        lv_canvas_fill_bg(ui_CpuGraph, lv_color_white(), LV_OPA_100);
+        lv_canvas_fill_bg(ui_CpuGhzGraph, lv_color_white(), LV_OPA_100);
         v = *cpu_graph.peek(0);
         pts[0].x = 0;
         pts[0].y = 36 - ((v/cpu_scale)+offs) * 36;
@@ -364,17 +365,17 @@ static void update_screen_1() {
             pts[i].x = i;
             pts[i].y = 36 - ((v/cpu_scale)+offs) * 36;
         }
-        lv_canvas_draw_line(ui_CpuGraph, pts, cpu_graph.size(), &dsc);
+        lv_canvas_draw_line(ui_CpuGhzGraph, pts, cpu_graph.size(), &dsc);
     }
     if (redraw_gpu) {
-        float offs = - (screen_1_gpu_min*gpu_scale);
+        float offs = - (screen_1_gpu_min/gpu_scale);
         lv_point_t pts[sizeof(gpu_graph)];
         lv_draw_line_dsc_t dsc;
         lv_draw_line_dsc_init(&dsc);
         dsc.width = 1;
         dsc.color = lv_color_hex(0xFF0000);
         dsc.opa = LV_OPA_100;
-        lv_canvas_fill_bg(ui_GpuGraph, lv_color_white(), LV_OPA_100);
+        lv_canvas_fill_bg(ui_GpuGhzGraph, lv_color_white(), LV_OPA_100);
         v = *gpu_graph.peek(0);
         pts[0].x = 0;
         pts[0].y = 36 - ((v/cpu_scale)+offs) * 36;
@@ -383,7 +384,7 @@ static void update_screen_1() {
             pts[i].x = i;
             pts[i].y = 36 - ((v/cpu_scale)+offs) * 36;
         }
-        lv_canvas_draw_line(ui_GpuGraph, pts, gpu_graph.size(), &dsc);
+        lv_canvas_draw_line(ui_GpuGhzGraph, pts, gpu_graph.size(), &dsc);
     }
 }
 static int ticker = 0;
