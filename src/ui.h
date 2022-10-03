@@ -29,6 +29,17 @@ extern lv_obj_t * ui_CpuBar;
 extern lv_obj_t * ui_GpuBar;
 extern lv_obj_t * ui_CpuTempLabel;
 extern lv_obj_t * ui_GpuTempLabel;
+extern lv_obj_t * ui_Screen2;
+extern lv_obj_t * ui_Label3;
+extern lv_obj_t * ui_CpuGhzLabel;
+extern lv_obj_t * ui_CpuGhzBar;
+extern lv_obj_t * ui_Label5;
+extern lv_obj_t * ui_GpuGhzBar;
+extern lv_obj_t * ui_GpuGhzLabel;
+
+
+
+
 
 
 void ui_init(void);

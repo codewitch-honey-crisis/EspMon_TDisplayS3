@@ -18,6 +18,8 @@ extern "C" {
 #endif
 extern lv_obj_t * ui_CpuGraph;
 extern lv_obj_t * ui_GpuGraph;
+extern lv_obj_t * ui_CpuGhzGraph;
+extern lv_obj_t * ui_GpuGhzGraph;
 
 void ui_patch(void);
 #ifdef __cplusplus
