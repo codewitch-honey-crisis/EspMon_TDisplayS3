@@ -378,7 +378,7 @@ static void update_screen_1() {
         lv_canvas_fill_bg(ui_GpuGhzGraph, lv_color_white(), LV_OPA_100);
         v = *gpu_graph.peek(0);
         pts[0].x = 0;
-        pts[0].y = 36 - ((v/cpu_scale)+offs) * 36;
+        pts[0].y = 36 - ((v/gpu_scale)+offs) * 36;
         for (size_t i = 1; i < gpu_graph.size(); ++i) {
             v = *gpu_graph.peek(i);
             pts[i].x = i;
