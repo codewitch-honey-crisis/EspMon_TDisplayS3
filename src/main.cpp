@@ -21,8 +21,8 @@ static lv_disp_drv_t disp_drv;       // contains callback functions
 static lv_color_t *lv_disp_buf;
 static lv_color_t *lv_disp_buf2;
 static bool is_initialized_lvgl = false;
-circular_buffer<uint8_t, 135> cpu_graph;
-circular_buffer<uint8_t, 135> gpu_graph;
+circular_buffer<float, 135> cpu_graph;
+circular_buffer<float, 135> gpu_graph;
 static lv_color_t cpu_graph_buf[LV_IMG_BUF_SIZE_TRUE_COLOR(135, 37)];
 static lv_color_t gpu_graph_buf[LV_IMG_BUF_SIZE_TRUE_COLOR(135, 37)];
 static size_t screen = 0;
@@ -181,8 +181,8 @@ void setup() {
     USBSerial.begin(115200);
 }
 static void update_screen_0() {
-    uint8_t tmp;
-    uint8_t v;
+    float tmp;
+    float v;
     bool redraw_cpu, redraw_gpu;
     char sz[64];
     union {
@@ -199,7 +199,7 @@ static void update_screen_0() {
             if (cpu_graph.full()) {
                 cpu_graph.get(&tmp);
             }
-            v = (fbu.f + .5);
+            v = fbu.f;
             cpu_graph.put(v);
             redraw_cpu = true;
             lv_bar_set_value(ui_CpuBar, v, LV_ANIM_ON);
@@ -214,7 +214,7 @@ static void update_screen_0() {
                             if (gpu_graph.full()) {
                                 gpu_graph.get(&tmp);
                             }
-                            v = (fbu.f + .5);
+                            v = fbu.f;
                             gpu_graph.put(v);
                             redraw_gpu = true;
                             lv_bar_set_value(ui_GpuBar, v, LV_ANIM_ON);
@@ -285,8 +285,8 @@ static void update_screen_0() {
 static float screen_1_cpu_min=NAN,screen_1_cpu_max=NAN;
 static float screen_1_gpu_min=NAN,screen_1_gpu_max=NAN;
 static void update_screen_1() {
-    uint8_t tmp;
-    uint8_t v;
+    float tmp;
+    float v;
     bool redraw_cpu, redraw_gpu;
     float cpu_scale, gpu_scale;
     char sz[64];
@@ -304,7 +304,7 @@ static void update_screen_1() {
             if (cpu_graph.full()) {
                 cpu_graph.get(&tmp);
             }
-            v = (fbu.f + .5);
+            v = (fbu.f);
             cpu_graph.put(v);
             if(screen_1_cpu_min!=screen_1_cpu_min||v<screen_1_cpu_min) {
                 screen_1_cpu_min = v;
@@ -324,7 +324,7 @@ static void update_screen_1() {
                     if (gpu_graph.full()) {
                         gpu_graph.get(&tmp);
                     }
-                    v = (fbu.f + .5);
+                    v = (fbu.f);
                     gpu_graph.put(v);
                     if(screen_1_gpu_min!=screen_1_gpu_min||v<screen_1_gpu_min) {
                         screen_1_gpu_min = v;
