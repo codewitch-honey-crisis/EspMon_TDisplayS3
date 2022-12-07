@@ -178,7 +178,7 @@ void setup() {
     lv_canvas_set_buffer(ui_GpuGhzGraph, gpu_graph_buf, 135, 37, LV_IMG_CF_TRUE_COLOR);
     button_prev.callback(button_prev_cb);
     button_next.callback(button_next_cb);
-    USBSerial.begin(115200);
+
 }
 static void update_screen_0() {
     float tmp;
@@ -191,10 +191,10 @@ static void update_screen_0() {
     } fbu;
     redraw_cpu = false;
     redraw_gpu = false;
-    if (USBSerial.available()) {
-        int i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+    if (Serial.available()) {
+        int i = Serial.readBytes(fbu.b, sizeof(fbu.b));
         if (i == 0) {
-            USBSerial.write('#');
+            Serial.write('#');
         } else {
             if (cpu_graph.full()) {
                 cpu_graph.get(&tmp);
@@ -203,13 +203,13 @@ static void update_screen_0() {
             cpu_graph.put(v);
             redraw_cpu = true;
             lv_bar_set_value(ui_CpuBar, v, LV_ANIM_ON);
-            if (USBSerial.available()) {
-                i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+            if (Serial.available()) {
+                i = Serial.readBytes(fbu.b, sizeof(fbu.b));
                 if (i != 0) {
                     snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
                     lv_label_set_text(ui_CpuTempLabel, sz);
-                    if (USBSerial.available()) {
-                        i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+                    if (Serial.available()) {
+                        i = Serial.readBytes(fbu.b, sizeof(fbu.b));
                         if (i != 0) {
                             if (gpu_graph.full()) {
                                 gpu_graph.get(&tmp);
@@ -218,32 +218,32 @@ static void update_screen_0() {
                             gpu_graph.put(v);
                             redraw_gpu = true;
                             lv_bar_set_value(ui_GpuBar, v, LV_ANIM_ON);
-                            if (USBSerial.available()) {
-                                i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+                            if (Serial.available()) {
+                                i = Serial.readBytes(fbu.b, sizeof(fbu.b));
                                 if (i != 0) {
                                     snprintf(sz, sizeof(sz), "%0.1fC/%0.1fF", fbu.f, fbu.f * (9.0f / 5.0f) + 32);
                                     lv_label_set_text(ui_GpuTempLabel, sz);
                                 } else {
-                                    USBSerial.write('#');
+                                    Serial.write('#');
                                 }
                             } else {
-                                USBSerial.write('#');
+                                Serial.write('#');
                             }
                         } else {
-                            USBSerial.write('#');
+                            Serial.write('#');
                         }
                     } else {
-                        USBSerial.write('#');
+                        Serial.write('#');
                     }
                 } else {
-                    USBSerial.write('#');
+                    Serial.write('#');
                 }
             } else {
-                USBSerial.write('#');
+                Serial.write('#');
             }
         }
     } else {
-        USBSerial.write('#');
+        Serial.write('#');
     }
     if (redraw_cpu) {
         lv_point_t pts[sizeof(cpu_graph)];
@@ -296,10 +296,10 @@ static void update_screen_1() {
     } fbu;
     redraw_cpu = false;
     redraw_gpu = false;
-    if (USBSerial.available()) {
-        int i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+    if (Serial.available()) {
+        int i = Serial.readBytes(fbu.b, sizeof(fbu.b));
         if (i == 0) {
-            USBSerial.write('@');
+            Serial.write('@');
         } else {
             if (cpu_graph.full()) {
                 cpu_graph.get(&tmp);
@@ -318,8 +318,8 @@ static void update_screen_1() {
             lv_bar_set_value(ui_CpuGhzBar, ((v/cpu_scale)+offs)*100, LV_ANIM_ON);
             snprintf(sz, sizeof(sz), "%0.1fGHz", fbu.f/1000.0);
             lv_label_set_text(ui_CpuGhzLabel, sz);
-            if (USBSerial.available()) {
-                i = USBSerial.readBytes(fbu.b, sizeof(fbu.b));
+            if (Serial.available()) {
+                i = Serial.readBytes(fbu.b, sizeof(fbu.b));
                 if (i != 0) {
                     if (gpu_graph.full()) {
                         gpu_graph.get(&tmp);
@@ -339,14 +339,14 @@ static void update_screen_1() {
                     snprintf(sz, sizeof(sz), "%0.1fGHz", fbu.f/1000.0);
                     lv_label_set_text(ui_GpuGhzLabel, sz);
                 } else {
-                    USBSerial.write('@');
+                    Serial.write('@');
                 }
             } else {
-                USBSerial.write('@');
+                Serial.write('@');
             }
         }
     } else {
-        USBSerial.write('@');
+        Serial.write('@');
     }
     if (redraw_cpu) {
         float offs = - (screen_1_cpu_min/cpu_scale);
